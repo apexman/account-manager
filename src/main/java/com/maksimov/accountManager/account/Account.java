@@ -1,4 +1,4 @@
-package com.maksimov.moneyManager;
+package com.maksimov.accountManager.account;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,7 +14,10 @@ public class Account {
     @Column(name = "account_id")
     private String id = UUID.randomUUID().toString().replace("-", "");
 
-    @Column(name = "balance", precision = 2)
+    @Column(name="name")
+    private String name;
+
+    @Column(name = "balance")
     private BigDecimal balance = BigDecimal.ZERO;
 
     public String getId() {
@@ -23,6 +26,14 @@ public class Account {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public BigDecimal getBalance() {
@@ -40,6 +51,7 @@ public class Account {
     public String toString() {
         return "Account{" +
                 "id='" + id + '\'' +
+                ", name='" + name + '\'' +
                 ", balance=" + balance +
                 '}';
     }

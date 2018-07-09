@@ -1,4 +1,4 @@
-package com.maksimov.moneyManager;
+package com.maksimov.accountManager;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

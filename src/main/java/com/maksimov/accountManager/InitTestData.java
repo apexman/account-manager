@@ -1,5 +1,7 @@
-package com.maksimov.moneyManager;
+package com.maksimov.accountManager;
 
+import com.maksimov.accountManager.account.Account;
+import com.maksimov.accountManager.account.AccountRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ public class InitTestData {
         Account account = new Account();
         account.setId("165d4252b8f645f0b66c1fc7f727bb4a");
         account.setBalance(BigDecimal.ONE);
+        account.setName("Test account");
         System.out.println(account);
         accountRepositoryy.save(account);
 
