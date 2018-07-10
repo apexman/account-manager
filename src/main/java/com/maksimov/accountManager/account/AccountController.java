@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/api/account")
@@ -45,5 +46,11 @@ public class AccountController {
 
         accountRepository.deleteById(account.getId());
         return "Deleted";
+    }
+
+    @RequestMapping(value = "/deposit", method = RequestMethod.POST)
+    public Optional<Account> deposit(Account account, BigDecimal deposit){
+        Optional<Account> updatedAcc = accountRepository.deposit(account.getId(), deposit);
+        return updatedAcc;
     }
 }

@@ -45,7 +45,8 @@ define(["webix"],
                         value: account.id,
                         readonly: true,
                         disabled: true,
-                        bottomPadding: 18
+                        bottomPadding: 18,
+                        hidden: true
                     },
                     {
                         view: "text",
