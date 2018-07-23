@@ -21,15 +21,19 @@ public class InitTestData {
     @EventListener(ApplicationReadyEvent.class)
     public void initTestData(){
         logger.info("Initialize test data");
+        createAccount("165d4252b8f645f0b66c1fc7f727bb4a", BigDecimal.TEN, "Test account 1");
+        createAccount("0b66c1fc7f727bb4a165d4252b8f645f", BigDecimal.TEN, "Test account 2");
+        logger.info("Initialization completed");
+    }
 
+    private void createAccount(String id, BigDecimal money, String name) {
         Account account = new Account();
-        account.setId("165d4252b8f645f0b66c1fc7f727bb4a");
-        account.setBalance(BigDecimal.TEN);
-        account.setName("Test account");
+        account.setId(id);
+        account.setBalance(money);
+        account.setName(name);
         System.out.println(account);
         accountRepositoryy.save(account);
 
-        logger.info("Initialization completed");
     }
 
 }

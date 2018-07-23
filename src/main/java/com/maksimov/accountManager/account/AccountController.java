@@ -5,11 +5,9 @@ import com.maksimov.accountManager.exception.ExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/api/account")
@@ -18,7 +16,7 @@ public class AccountController {
     public static final String HELLO_TEXT = "hello from account controller";
 
     @Autowired
-    private AccountRepository accountRepository;// = new AccountRepository();
+    private AccountService accountService;// = new AccountRepository();
 
     @RequestMapping(value = "/hello")
     public String sayHello(){
@@ -28,14 +26,13 @@ public class AccountController {
     @RequestMapping(value = {"", "/", "all"}, method = RequestMethod.GET)
     public Iterable<Account> getAll() {
         logger.info("getAll");
-        return accountRepository.findAll();
+        return accountService.findAll();
     }
 
     @RequestMapping(value="/{id}")
     public Account getAccountById(@PathVariable String id) {
         logger.info("Reading account with id " + id + " from database.");
-        //TODO replace NULLs
-        return accountRepository.findById(id).orElse(null);
+        return accountService.findById(id);
     }
 
     @RequestMapping(value = "/update", method = RequestMethod.POST)
@@ -44,7 +41,7 @@ public class AccountController {
 
         if (account.getBalance().compareTo(BigDecimal.ZERO) >= 0) {
             try {
-                accountRepository.save(account);
+                accountService.save(account);
             } catch (BalanceException e) {
                 logger.error(e.getMessage());
                 //надо сообщить об этом както
@@ -58,7 +55,7 @@ public class AccountController {
     public String delete(@PathVariable String id) {
         logger.info("delete account: " + id);
 
-        accountRepository.deleteById(id);
+        accountService.deleteById(id);
         return "Deleted";
     }
 
@@ -67,15 +64,13 @@ public class AccountController {
         logger.info("deposit " + deposit);
 
         try {
-            accountRepository.deposit(id, deposit);
+            accountService.deposit(id, deposit);
         } catch (ExceptionHandler exceptionHandler) {
             logger.error(exceptionHandler.getMessage());
             //hz
         }
 
-        Optional<Account> accountOptional = accountRepository.findById(id);
-
-        return accountOptional.orElse(null);
+        return accountService.findById(id);
     }
 
     @RequestMapping(value = "/withdraw/{id}", method = RequestMethod.POST)
@@ -83,13 +78,21 @@ public class AccountController {
         logger.info("withdraw " + withdrawn);
 
         try {
-            accountRepository.withdraw(id, withdrawn);
+            accountService.withdraw(id, withdrawn);
         } catch (ExceptionHandler exceptionHandler) {
+            logger.error(exceptionHandler.getMessage());
             //hz
         }
 
-        Optional<Account> accountOptional = accountRepository.findById(id);
-        //TODO replace NULLs
-        return accountOptional.orElse(null);
+        return accountService.findById(id);
+    }
+
+    @RequestMapping(value = "/transfer")
+    public void transfer(@RequestParam String idFrom, @RequestParam String idWhere, @RequestParam BigDecimal money) {
+        try {
+            accountService.transfer(idFrom, idWhere, money);
+        } catch (ExceptionHandler exceptionHandler) {
+            logger.error(exceptionHandler.getMessage());
+        }
     }
 }

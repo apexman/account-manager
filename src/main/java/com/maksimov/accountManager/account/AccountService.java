@@ -3,17 +3,24 @@ package com.maksimov.accountManager.account;
 import com.maksimov.accountManager.exception.BalanceException;
 import com.maksimov.accountManager.exception.ExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Lock;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import javax.persistence.LockModeType;
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
-import java.util.Optional;
 
-@Component
-public class AccountRepository {
+@Service
+@Transactional
+public class AccountService {
     @Autowired
     private IAccountRepository accountRepository;
+
+    public Iterable<Account> findAll() {
+        return accountRepository.findAll();
+    }
+
+    public Account findById(String id) {
+        return accountRepository.findById(id).orElse(null);
+    }
 
     public Account save(Account account) throws BalanceException {
         if (account.getBalance().compareTo(BigDecimal.ZERO) >= 0)
@@ -26,48 +33,44 @@ public class AccountRepository {
         accountRepository.deleteById(id);
     }
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
     public Account deposit(String id, BigDecimal deposit) throws ExceptionHandler {
-        Optional<Account> accountOptional = accountRepository.findById(id);
+        Account account = accountRepository.findOneAndLock(id);
 
-        if (isPresentAccountAndNonnegativeNumber(accountOptional, deposit)) {
-            Account account = accountOptional.get();
+        if (doesPresentAccountAndNonnegativeNumber(account, deposit)) {
             account.setBalance(account.getBalance().add(deposit));
             return this.save(account);
         } else
             return null;
     }
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
     public Account withdraw(String id, BigDecimal money) throws ExceptionHandler {
-        Optional<Account> accountOptional = accountRepository.findById(id);
+        Account account = accountRepository.findOneAndLock(id);
 
-        if (isPresentAccountAndNonnegativeNumber(accountOptional, money)){
-            if (accountOptional.get().getBalance().compareTo(money) >= 0) {
-                Account account = accountOptional.get();
+        if (doesPresentAccountAndNonnegativeNumber(account, money)){
+            if (account.getBalance().compareTo(money) >= 0) {
                 account.setBalance(account.getBalance().subtract(money));
                 return this.save(account);
             } else
-                throw new BalanceException("Balance is fewer then money withdrawn: money withdrawn = " + money + "; account = " + accountOptional.get());
+                throw new BalanceException("Balance is fewer then money withdrawn: money withdrawn = " + money + "; account = " + account);
         } else
             return null;
     }
 
-    private boolean isPresentAccountAndNonnegativeNumber(Optional<Account> accountOptional, BigDecimal bigDecimal) throws ExceptionHandler {
+    public void transfer(String accFrom, String accWhere, BigDecimal money) throws ExceptionHandler {
+        System.out.println("STARTED " + money);
+//        accountRepository.findTwoAndLock(accFrom, accWhere);
+        withdraw(accFrom, money);
+        deposit(accWhere, money);
+        System.out.println("ENDED " + money);
+    }
+
+    private boolean doesPresentAccountAndNonnegativeNumber(Account account, BigDecimal bigDecimal) throws ExceptionHandler {
         if (bigDecimal.compareTo(BigDecimal.ZERO) >= 0) {
-            if (accountOptional.isPresent()) {
+            if (account != null) {
                 return true;
             } else
                 throw new ExceptionHandler("Account is missing");
         } else
             throw new ExceptionHandler("Number must be a non-negative");
-    }
-
-    public Iterable<Account> findAll() {
-        return accountRepository.findAll();
-    }
-
-    public Optional<Account> findById(String id) {
-        return accountRepository.findById(id);
     }
 }
