@@ -158,6 +158,29 @@ public class AccountManagerTests {
     }
 
     @Test
+    public void transferConcurrentlyToSameAcc(){
+        ExecutorService es = Executors.newFixedThreadPool(10);
+
+        try {
+            for (int i = 0; i < 1; i++) {
+                es.execute(this::transferOk);
+                es.execute(this::transferOk);
+                es.execute(this::transferOk);
+                es.execute(this::transferOk);
+                es.execute(this::transferOk);
+                es.execute(this::transferOk);
+                es.execute(this::transferOk);
+                es.execute(this::transferOk);
+            }
+
+            es.shutdown();
+            es.awaitTermination(3, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
     public void transferMoreThanHave(){
         String accId1 = "165d4252b8f645f0b66c1fc7f727bb4a";
         String accId2 = "0b66c1fc7f727bb4a165d4252b8f645f";
@@ -165,7 +188,7 @@ public class AccountManagerTests {
         given()
                 .queryParam("idFrom", accId1)
                 .queryParam("idWhere", accId2)
-                .queryParam("money", BigDecimal.valueOf(50))
+                .queryParam("money", BigDecimal.valueOf(5000))
                 .when()
                 .post("/api/account/transfer")
                 .then()
@@ -178,6 +201,14 @@ public class AccountManagerTests {
 
         try {
             for (int i = 0; i < 1; i++) {
+                es.execute(this::transferFrom1To2);
+                es.execute(this::transferFrom2To1);
+                es.execute(this::transferFrom1To2);
+                es.execute(this::transferFrom2To1);
+                es.execute(this::transferFrom1To2);
+                es.execute(this::transferFrom2To1);
+                es.execute(this::transferFrom1To2);
+                es.execute(this::transferFrom2To1);
                 es.execute(this::transferFrom1To2);
                 es.execute(this::transferFrom2To1);
             }
