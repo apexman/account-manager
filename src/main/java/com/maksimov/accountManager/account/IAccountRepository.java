@@ -15,8 +15,4 @@ public interface IAccountRepository extends CrudRepository<Account, String> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select acc from Account acc where acc.id = :id")
     Account findOneAndLock(@Param("id") String id);
-
-//    @Lock(LockModeType.PESSIMISTIC_WRITE)
-//    @Query("select acc from Account acc where acc.id = :id1 or acc.id = :id2")
-//    void findTwoAndLock(@Param("id1") String id1, @Param("id2") String id2);
 }

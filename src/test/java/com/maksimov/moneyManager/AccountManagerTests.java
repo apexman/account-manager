@@ -115,6 +115,18 @@ public class AccountManagerTests {
     }
 
     @Test
+    public void depositToNonexistentAccount(){
+        given()
+            .pathParam("id", "_NONEXISTENT_")
+            .queryParam("deposit", BigDecimal.valueOf(2))
+            .when()
+            .post("/api/account/deposit/{id}")
+            .then()
+            .statusCode(is(HttpStatus.SC_OK));
+
+    }
+
+    @Test
     public void withdraw(){
         String id = "165d4252b8f645f0b66c1fc7f727bb4a";
 
@@ -158,7 +170,7 @@ public class AccountManagerTests {
     }
 
     @Test
-    public void transferConcurrentlyToSameAcc(){
+    public void transferConcurrentlyToSameAccount(){
         ExecutorService es = Executors.newFixedThreadPool(10);
 
         try {
@@ -203,12 +215,16 @@ public class AccountManagerTests {
             for (int i = 0; i < 1; i++) {
                 es.execute(this::transferFrom1To2);
                 es.execute(this::transferFrom2To1);
+
                 es.execute(this::transferFrom1To2);
                 es.execute(this::transferFrom2To1);
+
                 es.execute(this::transferFrom1To2);
                 es.execute(this::transferFrom2To1);
+
                 es.execute(this::transferFrom1To2);
                 es.execute(this::transferFrom2To1);
+
                 es.execute(this::transferFrom1To2);
                 es.execute(this::transferFrom2To1);
             }

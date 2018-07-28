@@ -2,6 +2,7 @@ package com.maksimov.accountManager.account;
 
 import com.maksimov.accountManager.exception.BalanceException;
 import com.maksimov.accountManager.exception.ExceptionHandler;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.exception.LockAcquisitionException;
 import org.hibernate.jdbc.Work;
@@ -15,6 +16,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -30,12 +32,6 @@ public class AccountService {
     @Autowired
     private AccountService accountService;
 
-//    @Autowired
-//    private EntityManagerFactory entityManagerFactory;
-
-    @Autowired
-    private SessionFactory sessionFactory;
-
     private static final String RESOURCE_KEY = "lockService.resources";
 
     public final Logger logger = LoggerFactory.getLogger(AccountService.class);
@@ -44,23 +40,22 @@ public class AccountService {
         return accountRepository.findAll();
     }
 
-    public Account findById(String id) {
+    public Account findById(@NotNull String id) {
         return accountRepository.findById(id).orElse(null);
     }
 
-    public Account save(Account account) throws BalanceException {
+    public Account save(@NotNull Account account) throws BalanceException {
         if (account.getBalance().compareTo(BigDecimal.ZERO) >= 0)
             return accountRepository.save(account);
         else
             throw new BalanceException("Balance must be non-negative: " + account.getBalance());
     }
 
-    public void deleteById(String id) {
+    public void deleteById(@NotNull String id) {
         accountRepository.deleteById(id);
     }
 
-    public Account deposit(String id, BigDecimal deposit) throws ExceptionHandler {
-        accountService.lock(id);
+    public Account deposit(@NotNull String id, @NotNull BigDecimal deposit) throws ExceptionHandler {
         Account account = accountRepository.findOneAndLock(id);
 
         if (isPositiveNumber(deposit) && doesPresentAccount(account)) {
@@ -70,8 +65,7 @@ public class AccountService {
             return null;
     }
 
-    public Account withdraw(String id, BigDecimal money) throws ExceptionHandler {
-        accountService.lock(id);
+    public Account withdraw(@NotNull String id, @NotNull BigDecimal money) throws ExceptionHandler {
         Account account = accountRepository.findOneAndLock(id);
 
         if (isPositiveNumber(money) && doesPresentAccount(account)) {
@@ -84,85 +78,18 @@ public class AccountService {
             return null;
     }
 
-    public void transfer(String accFromId, String accWhereId, BigDecimal money) throws ExceptionHandler {
-//        System.out.println("STARTED " + money);
-        long start = System.currentTimeMillis();
-
+    public void transfer(@NotNull String accFromId, @NotNull String accWhereId, @NotNull BigDecimal money) throws ExceptionHandler {
         isPositiveNumber(money);
-
-        accountService.withdraw(accFromId, money);
-        accountService.deposit(accWhereId, money);
-
-//        System.out.println("ENDED " + money);
-        System.out.println("DELTA: " + (System.currentTimeMillis() - start));
-    }
-
-    public void lock(final String id) {
-//        sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
-
-        Set<String> locked = (Set<String>) TransactionSynchronizationManager.getResource(RESOURCE_KEY);
-        boolean applyLock = false;
-        boolean registerListener = false;
-
-        if (locked == null) {
-            locked = new HashSet<>();
-            TransactionSynchronizationManager.bindResource(RESOURCE_KEY, locked);
-            registerListener = true;
-        }
-
-        if (!locked.contains(id)) {
-            locked.add(id);
-            applyLock = true;
-        }
-
-        if (applyLock) {
-            if (logger.isDebugEnabled())
-                logger.debug("Attempting to acquire lock for: {}", id);
-
-            // performs the lock
-            try {
-                sessionFactory.getCurrentSession().doWork(new Work() {
-                    @Override
-                    public void execute(Connection connection) throws SQLException {
-                        connection.prepareStatement(String.format("select * from customer where id='%s' for update", id)).
-                                execute();
-                    }
-                });
-            } catch (LockAcquisitionException e) {
-                logger.warn("Failed to acquire lock for: {}, deadlock detected", id);
-                locked.remove(id);
-                throw e;
-            }
-
-            if (logger.isDebugEnabled())
-                logger.debug("Lock acquired for: {}", id);
-
-            if (registerListener) {
-                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                    @Override
-                    public void afterCompletion(int status) {
-                        Set<String> locked = (Set<String>) TransactionSynchronizationManager.getResource(RESOURCE_KEY);
-
-                        if (locked != null) {
-                            if (logger.isDebugEnabled())
-                                logger.debug("Releasing locks for: {}", locked.toString());
-
-                            TransactionSynchronizationManager.unbindResource(RESOURCE_KEY);
-                        }
-                    }
-                });
-            } else {
-                if (logger.isTraceEnabled())
-                    logger.trace("This is the further lock for this transaction, what might cause deadlock!");
-            }
-
+        if (accFromId.compareTo(accWhereId) > 0) {
+            accountService.deposit(accWhereId, money);
+            accountService.withdraw(accFromId, money);
         } else {
-            if (logger.isDebugEnabled())
-                logger.debug("Lock already acquired for: {}, skipping", id);
+            accountService.withdraw(accFromId, money);
+            accountService.deposit(accWhereId, money);
         }
     }
 
-    private boolean isPositiveNumber(BigDecimal bigDecimal) throws ExceptionHandler {
+    private boolean isPositiveNumber(@NotNull BigDecimal bigDecimal) throws ExceptionHandler {
         if (bigDecimal.compareTo(BigDecimal.ZERO) >= 0) {
             return true;
         } else
