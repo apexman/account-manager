@@ -1,12 +1,13 @@
 package com.maksimov.moneyManager;
 
 import com.maksimov.accountManager.AccountManager;
-import com.maksimov.accountManager.account.Account;
-import com.maksimov.accountManager.account.AccountController;
+import com.maksimov.accountManager.controller.AccountController;
+import com.maksimov.accountManager.model.Account;
 import io.restassured.RestAssured;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -21,10 +22,8 @@ import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
-import static org.hamcrest.Matchers.closeTo;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 
 @RunWith(SpringRunner.class)
@@ -33,6 +32,7 @@ import static org.hamcrest.Matchers.is;
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+//@Ignore
 public class AccountManagerTests {
 
     @LocalServerPort
@@ -47,39 +47,38 @@ public class AccountManagerTests {
     @Test
     public void saysHello() {
         when()
-            .get("/api/account/hello")
-            .then()
-            .statusCode(HttpStatus.SC_OK)
-            .assertThat()
-            .body(is(equalTo(AccountController.HELLO_TEXT)));
+                .get("/api/account/hello")
+                .then()
+                .statusCode(HttpStatus.SC_OK)
+                .assertThat()
+                .body(is(equalTo(AccountController.HELLO_TEXT)));
     }
 
     @Test
     public void addNewAccountAndRetrieveItBack() {
         String norbertSiegmundName = "Norbert Siegmund";
-        Account norbertSiegmundAcc = new Account();
-        norbertSiegmundAcc.setName(norbertSiegmundName);
+        Account norbertSiegmundAcc = new Account(norbertSiegmundName, BigDecimal.ZERO);
 
         Account account =
-            given()
-                .queryParam("name", norbertSiegmundName)
-                .queryParam("balance", BigDecimal.ONE)
-                .when()
-                .post("/api/account/update")
-                .then()
-                .statusCode(is(HttpStatus.SC_OK))
-                .extract()
-                .body().as(Account.class);
+                given()
+                        .queryParam("name", norbertSiegmundName)
+                        .queryParam("balance", BigDecimal.ONE)
+                        .when()
+                        .post("/api/account/save")
+                        .then()
+                        .statusCode(is(HttpStatus.SC_OK))
+                        .extract()
+                        .body().as(Account.class);
 
         Account responseAccount =
-            given()
-                .pathParam("id", account.getId())
-                .when()
-                .get("/api/account/{id}")
-                .then()
-                .statusCode(HttpStatus.SC_OK)
-                .assertThat()
-                .extract().as(Account.class);
+                given()
+                        .pathParam("id", account.getId())
+                        .when()
+                        .get("/api/account/{id}")
+                        .then()
+                        .statusCode(HttpStatus.SC_OK)
+                        .assertThat()
+                        .extract().as(Account.class);
 
         // Did Norbert account come back?
         assertThat(responseAccount.getName(), is(norbertSiegmundName));
@@ -87,75 +86,96 @@ public class AccountManagerTests {
     }
 
     @Test
-    public void deposit(){
+    public void deleteAccount(){
+        given()
+                .pathParam("id", "TODELETE")
+                .when()
+                .post("/api/account/delete/{id}")
+                .then()
+                .statusCode(HttpStatus.SC_OK);
+    }
+
+    @Test
+    public void deposit() {
         String id = "165d4252b8f645f0b66c1fc7f727bb4a";
 
         BigDecimal currentBalance =
-            given()
-                .pathParam("id", id)
-                .when()
-                .post("/api/account/{id}")
-                .then()
-                .statusCode(is(HttpStatus.SC_OK))
-                .extract()
-                .body().as(Account.class).getBalance();
+                given()
+                        .pathParam("id", id)
+                        .when()
+                        .get("/api/account/{id}")
+                        .then()
+                        .statusCode(is(HttpStatus.SC_OK))
+                        .extract()
+                        .body().as(Account.class).getBalance();
 
         Account account =
-            given()
-                .pathParam("id", id)
-                .queryParam("deposit", BigDecimal.valueOf(2))
-                .when()
-                .post("/api/account/deposit/{id}")
-                .then()
-                .statusCode(is(HttpStatus.SC_OK))
-                .extract()
-                .body().as(Account.class);
+                given()
+                        .pathParam("id", id)
+                        .queryParam("deposit", BigDecimal.valueOf(2))
+                        .when()
+                        .post("/api/account/deposit/{id}")
+                        .then()
+                        .statusCode(is(HttpStatus.SC_OK))
+                        .extract()
+                        .body().as(Account.class);
 
         assertThat(account.getBalance(), closeTo(currentBalance.add(BigDecimal.valueOf(2)), BigDecimal.ZERO));
     }
 
     @Test
-    public void depositToNonexistentAccount(){
+    public void depositToNonexistentAccount() {
         given()
-            .pathParam("id", "_NONEXISTENT_")
-            .queryParam("deposit", BigDecimal.valueOf(2))
-            .when()
-            .post("/api/account/deposit/{id}")
-            .then()
-            .statusCode(is(HttpStatus.SC_OK));
+                .pathParam("id", "_NONEXISTENT_")
+                .queryParam("deposit", BigDecimal.valueOf(2))
+                .when()
+                .post("/api/account/deposit/{id}")
+                .then()
+                .statusCode(is(HttpStatus.SC_NOT_FOUND));
 
     }
 
     @Test
-    public void withdraw(){
+    public void withdraw() {
         String id = "165d4252b8f645f0b66c1fc7f727bb4a";
 
         BigDecimal currentBalance =
-            given()
-                .pathParam("id", id)
-                .when()
-                .post("/api/account/{id}")
-                .then()
-                .statusCode(is(HttpStatus.SC_OK))
-                .extract()
-                .body().as(Account.class).getBalance();
+                given()
+                        .pathParam("id", id)
+                        .when()
+                        .get("/api/account/{id}")
+                        .then()
+                        .statusCode(is(HttpStatus.SC_OK))
+                        .extract()
+                        .body().as(Account.class).getBalance();
 
         Account account =
-            given()
-                .pathParam("id", id)
-                .queryParam("withdrawn", BigDecimal.valueOf(7))
-                .when()
-                .post("/api/account/withdraw/{id}")
-                .then()
-                .statusCode(is(HttpStatus.SC_OK))
-                .extract()
-                .body().as(Account.class);
+                given()
+                        .pathParam("id", id)
+                        .queryParam("withdrawn", BigDecimal.valueOf(7))
+                        .when()
+                        .post("/api/account/withdraw/{id}")
+                        .then()
+                        .statusCode(is(HttpStatus.SC_OK))
+                        .extract()
+                        .body().as(Account.class);
 
         assertThat(account.getBalance(), closeTo(currentBalance.subtract(BigDecimal.valueOf(7)), BigDecimal.ZERO));
     }
 
     @Test
-    public void transferOk(){
+    public void withdrawFromNonexistentAccount() {
+        given()
+                .pathParam("id", "_NONEXISTENT_")
+                .queryParam("withdrawn", BigDecimal.valueOf(7))
+                .when()
+                .post("/api/account/withdraw/{id}")
+                .then()
+                .statusCode(is(HttpStatus.SC_NOT_FOUND));
+    }
+
+    @Test
+    public void transferOk() {
         String accId1 = "165d4252b8f645f0b66c1fc7f727bb4a";
         String accId2 = "0b66c1fc7f727bb4a165d4252b8f645f";
 
@@ -170,7 +190,7 @@ public class AccountManagerTests {
     }
 
     @Test
-    public void transferConcurrentlyToSameAccount(){
+    public void transferConcurrentlyToSameAccount() {
         ExecutorService es = Executors.newFixedThreadPool(10);
 
         try {
@@ -193,7 +213,7 @@ public class AccountManagerTests {
     }
 
     @Test
-    public void transferMoreThanHave(){
+    public void transferMoreThanHave() {
         String accId1 = "165d4252b8f645f0b66c1fc7f727bb4a";
         String accId2 = "0b66c1fc7f727bb4a165d4252b8f645f";
 
@@ -204,7 +224,7 @@ public class AccountManagerTests {
                 .when()
                 .post("/api/account/transfer")
                 .then()
-                .statusCode(is(HttpStatus.SC_OK));
+                .statusCode(is(HttpStatus.SC_BAD_REQUEST));
     }
 
     @Test
@@ -236,7 +256,7 @@ public class AccountManagerTests {
         }
     }
 
-    private void transferFrom1To2(){
+    private void transferFrom1To2() {
         String accId1 = "165d4252b8f645f0b66c1fc7f727bb4a";
         String accId2 = "0b66c1fc7f727bb4a165d4252b8f645f";
 
@@ -257,7 +277,7 @@ public class AccountManagerTests {
         }
     }
 
-    private void transferFrom2To1(){
+    private void transferFrom2To1() {
         String accId1 = "165d4252b8f645f0b66c1fc7f727bb4a";
         String accId2 = "0b66c1fc7f727bb4a165d4252b8f645f";
 
@@ -301,7 +321,7 @@ public class AccountManagerTests {
                 given()
                         .pathParam("id", id)
                         .when()
-                        .post("/api/account/{id}")
+                        .get("/api/account/{id}")
                         .then()
                         .statusCode(is(HttpStatus.SC_OK))
                         .extract()
@@ -334,7 +354,7 @@ public class AccountManagerTests {
                 given()
                         .pathParam("id", id)
                         .when()
-                        .post("/api/account/{id}")
+                        .get("/api/account/{id}")
                         .then()
                         .statusCode(is(HttpStatus.SC_OK))
                         .extract()
