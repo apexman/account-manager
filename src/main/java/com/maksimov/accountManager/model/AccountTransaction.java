@@ -1,11 +1,14 @@
 package com.maksimov.accountManager.model;
 
+import lombok.Data;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
 @Table(name = "transaction")
+@Data
 public class AccountTransaction {
     @Id
     @Column(name = "transaction_id")
@@ -28,38 +31,6 @@ public class AccountTransaction {
     public AccountTransaction(Account fromAccount, Account toAccount, BigDecimal amount) {
         this.fromAccount = fromAccount;
         this.toAccount = toAccount;
-        this.amount = amount;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public Account getFromAccount() {
-        return fromAccount;
-    }
-
-    public void setFromAccount(Account fromAccount) {
-        this.fromAccount = fromAccount;
-    }
-
-    public Account getToAccount() {
-        return toAccount;
-    }
-
-    public void setToAccount(Account toAccount) {
-        this.toAccount = toAccount;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 

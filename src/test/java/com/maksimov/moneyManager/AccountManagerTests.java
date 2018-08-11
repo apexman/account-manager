@@ -7,10 +7,11 @@ import io.restassured.RestAssured;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -22,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 
@@ -32,8 +32,8 @@ import static org.hamcrest.Matchers.*;
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-//@Ignore
 public class AccountManagerTests {
+    private Logger logger = LoggerFactory.getLogger(AccountManagerTests.class);
 
     @LocalServerPort
     private int port;
@@ -208,7 +208,7 @@ public class AccountManagerTests {
             es.shutdown();
             es.awaitTermination(3, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -252,7 +252,7 @@ public class AccountManagerTests {
             es.shutdown();
             es.awaitTermination(3, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -263,7 +263,7 @@ public class AccountManagerTests {
         try {
             Thread.sleep(0);
 
-            System.out.println("from 1 to 2");
+            logger.debug("from 1 to 2");
 
             given()
                     .queryParam("idFrom", accId1)
@@ -273,7 +273,7 @@ public class AccountManagerTests {
                     .post("/api/account/transfer");
 
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -284,7 +284,7 @@ public class AccountManagerTests {
         try {
             Thread.sleep(10);
 
-            System.out.println("from 2 to 1");
+            logger.debug("from 2 to 1");
 
             given()
                     .queryParam("idFrom", accId2)
@@ -294,7 +294,7 @@ public class AccountManagerTests {
                     .post("/api/account/transfer");
 
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -310,7 +310,7 @@ public class AccountManagerTests {
             es.shutdown();
             es.awaitTermination(1, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -347,7 +347,7 @@ public class AccountManagerTests {
         try {
             TimeUnit.SECONDS.sleep(2);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
         BigDecimal currentBalance =
