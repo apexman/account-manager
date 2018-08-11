@@ -23,7 +23,6 @@ public class AccountService {
     private AccountTransactionRepository accountTransactionRepository;
 
     @Autowired
-
     public AccountService(AccountRepository iAccountRepository, AccountTransactionRepository accountTransactionRepository) {
         this.accountRepository = iAccountRepository;
         this.accountTransactionRepository = accountTransactionRepository;
