@@ -20,6 +20,18 @@ public class Account {
     @Column(name = "balance")
     private BigDecimal balance = BigDecimal.ZERO;
 
+    public Account() {
+    }
+
+    public Account(String name) {
+        this.name = name;
+    }
+
+    public Account(String name, BigDecimal balance) {
+        this.name = name;
+        this.balance = balance;
+    }
+
     public String getId() {
         return id;
     }

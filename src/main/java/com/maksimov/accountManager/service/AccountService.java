@@ -4,7 +4,7 @@ import com.maksimov.accountManager.exception.NonPositiveNumberException;
 import com.maksimov.accountManager.exception.NotEnoughMoneyException;
 import com.maksimov.accountManager.exception.ResourceNotFoundException;
 import com.maksimov.accountManager.model.Account;
-import com.maksimov.accountManager.repository.IAccountRepository;
+import com.maksimov.accountManager.repository.AccountRepository;
 import org.modelmapper.internal.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,10 +21,10 @@ import java.util.List;
 public class AccountService {
     public final Logger logger = LoggerFactory.getLogger(AccountService.class);
 
-    private IAccountRepository accountRepository;
+    private AccountRepository accountRepository;
 
     @Autowired
-    public AccountService(IAccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
     }
 

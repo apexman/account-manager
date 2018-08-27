@@ -10,6 +10,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -21,10 +23,8 @@ import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
-import static org.hamcrest.Matchers.closeTo;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 
 
 @RunWith(SpringRunner.class)
@@ -34,6 +34,7 @@ import static org.hamcrest.Matchers.is;
 )
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AccountManagerTests {
+    private Logger logger = LoggerFactory.getLogger(AccountManagerTests.class);
 
     @LocalServerPort
     private int port;
@@ -57,8 +58,7 @@ public class AccountManagerTests {
     @Test
     public void addNewAccountAndRetrieveItBack() {
         String norbertSiegmundName = "Norbert Siegmund";
-        Account norbertSiegmundAcc = new Account();
-        norbertSiegmundAcc.setName(norbertSiegmundName);
+        Account norbertSiegmundAcc = new Account(norbertSiegmundName);
 
         Account account =
             given()
@@ -84,6 +84,16 @@ public class AccountManagerTests {
         // Did Norbert account come back?
         assertThat(responseAccount.getName(), is(norbertSiegmundName));
         assertThat(responseAccount.getBalance(), closeTo(BigDecimal.ONE, BigDecimal.ZERO));
+    }
+
+    @Test
+    public void deleteAccount(){
+        given()
+                .pathParam("id", "TODELETE")
+                .when()
+                .delete("/api/account/{id}")
+                .then()
+                .statusCode(HttpStatus.SC_OK);
     }
 
     @Test
@@ -155,6 +165,17 @@ public class AccountManagerTests {
     }
 
     @Test
+    public void withdrawFromNonexistentAccount() {
+        given()
+                .pathParam("id", "_NONEXISTENT_")
+                .queryParam("withdrawn", BigDecimal.valueOf(7))
+                .when()
+                .post("/api/account/withdraw/{id}")
+                .then()
+                .statusCode(is(HttpStatus.SC_NOT_FOUND));
+    }
+
+    @Test
     public void transferOk(){
         String accId1 = "165d4252b8f645f0b66c1fc7f727bb4a";
         String accId2 = "0b66c1fc7f727bb4a165d4252b8f645f";
@@ -188,7 +209,7 @@ public class AccountManagerTests {
             es.shutdown();
             es.awaitTermination(3, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -232,7 +253,7 @@ public class AccountManagerTests {
             es.shutdown();
             es.awaitTermination(3, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -243,7 +264,7 @@ public class AccountManagerTests {
         try {
             Thread.sleep(0);
 
-            System.out.println("from 1 to 2");
+            logger.debug("from 1 to 2");
 
             given()
                     .queryParam("idFrom", accId1)
@@ -253,7 +274,7 @@ public class AccountManagerTests {
                     .post("/api/account/transfer");
 
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -264,7 +285,7 @@ public class AccountManagerTests {
         try {
             Thread.sleep(10);
 
-            System.out.println("from 2 to 1");
+            logger.debug("from 2 to 1");
 
             given()
                     .queryParam("idFrom", accId2)
@@ -274,7 +295,7 @@ public class AccountManagerTests {
                     .post("/api/account/transfer");
 
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -290,7 +311,7 @@ public class AccountManagerTests {
             es.shutdown();
             es.awaitTermination(1, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -301,7 +322,7 @@ public class AccountManagerTests {
                 given()
                         .pathParam("id", id)
                         .when()
-                        .get("/api/account/{id}")
+                        .post("/api/account/{id}")
                         .then()
                         .statusCode(is(HttpStatus.SC_OK))
                         .extract()
@@ -327,7 +348,7 @@ public class AccountManagerTests {
         try {
             TimeUnit.SECONDS.sleep(2);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
         BigDecimal currentBalance =

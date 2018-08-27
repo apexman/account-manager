@@ -10,14 +10,14 @@ public class NotEnoughMoneyException extends AccountException {
     public NotEnoughMoneyException(Account account) {
         super(
                 String.format(
-                "There is not enough money to withdraw from account %s",
-                account.getId())
+                        "There is not enough money to withdraw from account %s",
+                        account.getId())
         );
 
         logger.error(
                 String.format(
-                "There is not enough money to withdraw from account %s",
-                account.getId())
+                        "There is not enough money to withdraw from account %s",
+                        account.getId())
         );
     }
 }
