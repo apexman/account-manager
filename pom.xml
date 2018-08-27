@@ -52,6 +52,11 @@
 			<version>${rest-assured.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.modelmapper</groupId>
+			<artifactId>modelmapper</artifactId>
+			<version>0.7.5</version>
+		</dependency>
 	</dependencies>
 
 	<build>

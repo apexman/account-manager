@@ -1,8 +1,9 @@
-package com.maksimov.accountManager.account;
+package com.maksimov.accountManager.model;
 
-import org.springframework.data.jpa.repository.Lock;
-
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -13,11 +14,10 @@ public class Account {
     @Column(name = "account_id")
     private String id = UUID.randomUUID().toString().replace("-", "");
 
-    @Column(name="name")
+    @Column(name = "name")
     private String name;
 
     @Column(name = "balance")
-//    @Lock(LockModeType.PESSIMISTIC_WRITE)
     private BigDecimal balance = BigDecimal.ZERO;
 
     public String getId() {

@@ -7,25 +7,40 @@ define(["webix"],
 
             console.log("saveAccount: " + JSON.stringify(account));
 
-            webix.ajax().post(databaseUrl + "/account/update", account, function (response, data, xml) {
-
-                let updatedAccount = data.json();
-                let accountListUI = $$("accountList");
-                if (accountListUI != null)
-                    accountListUI.updateItem(updatedAccount.id, updatedAccount);
-
-                webix.message("Saved");
-            });
+            webix.ajax()
+                .post(databaseUrl + "/account/", account)
+                .then(function (result) {
+                    let updatedAccount = result.json();
+                    let accountListUI = $$("accountList");
+                    if (accountListUI != null) {
+                        accountListUI.updateItem(updatedAccount.id, updatedAccount);
+                    }
+                    webix.message("Saved");
+                })
+                .fail(function (xhr) {
+                    let response = JSON.parse(xhr.response);
+                    webix.message({type: 'error',
+                        text: response.errorMessage});
+                });
         }
 
         function deleteAccount(account) {
-            console.log("deleteAccount: " + JSON.stringify(account));
-            webix.message("Deleted row: " + account.name);
-            webix.ajax().post(databaseUrl + "/account/delete", account, function (response, data, xml) {
-
-                let accountListUI = $$("accountList");
-                if (accountListUI != null)
-                    accountListUI.remove(account.id);
+            webix.confirm("Are you sure want to delete this account?", "confirm-warning", function(result){
+                if (result === true) {
+                    webix.ajax()
+                        .del(databaseUrl + "/account/" + account.id)
+                        .then(function () {
+                            let accountListUI = $$("accountList");
+                            if (accountListUI != null)
+                                accountListUI.remove(account.id);
+                            webix.message("Deleted row: " + account.name);
+                        })
+                        .fail(function (xhr) {
+                            let response = JSON.parse(xhr.response);
+                            webix.message({type: 'error',
+                                text: response.errorMessage});
+                        });
+                }
             });
         }
 
@@ -100,9 +115,9 @@ define(["webix"],
         }
 
         return {
-            layout: function (account) {
-                return editForm(account)
-            },
+            // layout: function (account) {
+            //     return editForm(account)
+            // },
 
             show: function (account) {
                 webix.ui({
@@ -125,6 +140,8 @@ define(["webix"],
                     },
                     body: editForm(account)
                 }).show();
+
+                $$("accountEditForm").focus("name");
             },
 
             saveAccount: function (account) {

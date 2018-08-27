@@ -1,8 +1,8 @@
 package com.maksimov.moneyManager;
 
 import com.maksimov.accountManager.AccountManager;
-import com.maksimov.accountManager.account.Account;
-import com.maksimov.accountManager.account.AccountController;
+import com.maksimov.accountManager.model.Account;
+import com.maksimov.accountManager.controller.AccountController;
 import io.restassured.RestAssured;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
@@ -65,7 +65,7 @@ public class AccountManagerTests {
                 .queryParam("name", norbertSiegmundName)
                 .queryParam("balance", BigDecimal.ONE)
                 .when()
-                .post("/api/account/update")
+                .post("/api/account/")
                 .then()
                 .statusCode(is(HttpStatus.SC_OK))
                 .extract()
@@ -94,7 +94,7 @@ public class AccountManagerTests {
             given()
                 .pathParam("id", id)
                 .when()
-                .post("/api/account/{id}")
+                .get("/api/account/{id}")
                 .then()
                 .statusCode(is(HttpStatus.SC_OK))
                 .extract()
@@ -122,7 +122,7 @@ public class AccountManagerTests {
             .when()
             .post("/api/account/deposit/{id}")
             .then()
-            .statusCode(is(HttpStatus.SC_OK));
+            .statusCode(is(HttpStatus.SC_NOT_FOUND));
 
     }
 
@@ -134,7 +134,7 @@ public class AccountManagerTests {
             given()
                 .pathParam("id", id)
                 .when()
-                .post("/api/account/{id}")
+                .get("/api/account/{id}")
                 .then()
                 .statusCode(is(HttpStatus.SC_OK))
                 .extract()
@@ -204,7 +204,7 @@ public class AccountManagerTests {
                 .when()
                 .post("/api/account/transfer")
                 .then()
-                .statusCode(is(HttpStatus.SC_OK));
+                .statusCode(is(HttpStatus.SC_NOT_ACCEPTABLE));
     }
 
     @Test
@@ -301,7 +301,7 @@ public class AccountManagerTests {
                 given()
                         .pathParam("id", id)
                         .when()
-                        .post("/api/account/{id}")
+                        .get("/api/account/{id}")
                         .then()
                         .statusCode(is(HttpStatus.SC_OK))
                         .extract()

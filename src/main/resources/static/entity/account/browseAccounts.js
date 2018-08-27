@@ -1,15 +1,17 @@
 define([
         "webix",
-        "entity/account/editForm"
+        "entity/account/editForm",
+        "entity/account/depositForm",
+        "entity/account/withdrawForm"
     ],
-    function (webix, accountEditForm) {
+    function (webix, accountEditForm, depositForm, withdrawForm) {
 
         function listGrid() {
             let accountList =
                 {
                     view: "datatable",
                     id: "accountList",
-                    url: databaseUrl + "/account/all",
+                    url: databaseUrl + "/account/",
                     autowidth: true,
                     select: "row",
                     type: {height: "auto"},
@@ -17,6 +19,18 @@ define([
                         {id: "id", header: "ID", width: 50, hidden: true, sort: "string"},
                         {id: "name", header: "Name", width: 200, sort: "string"},
                         {id: "balance", header: "Balance", width: 200},
+                        {
+                            id: "",
+                            template: "<input class='depositBtn' type='button' value='Deposit'>",
+                            css: "padding_less",
+                            width: 100
+                        },
+                        {
+                            id: "",
+                            template: "<input class='withdrawBtn' type='button' value='Withdraw'>",
+                            css: "padding_less",
+                            width: 100
+                        },
                         {
                             id: "",
                             template: "<input class='delbtn' type='button' value='Delete'>",
@@ -64,9 +78,25 @@ define([
                     body: listGrid()
                 }).show();
 
-                $$("accountList").on_click.delbtn=function(e, id, trg){
+                $$("accountList").on_click.depositBtn = function (e, id, trg) {
+                    let depositAcc = $$("accountList").getItem(id);
+                    depositForm.show(depositAcc);
+
+                    //block default onclick event
+                    return false;
+                };
+
+                $$("accountList").on_click.withdrawBtn = function (e, id, trg) {
+                    let withdrAcc = $$("accountList").getItem(id);
+                    withdrawForm.show(withdrAcc);
+
+                    //block default onclick event
+                    return false;
+                };
+
+                $$("accountList").on_click.delbtn = function (e, id, trg) {
                     let deletingAccount = $$("accountList").getItem(id);
-                    accountEditForm.deleteAccount(deletingAccount)
+                    accountEditForm.deleteAccount(deletingAccount);
 
                     //block default onclick event
                     return false;
