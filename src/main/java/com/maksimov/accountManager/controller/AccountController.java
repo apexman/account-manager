@@ -52,8 +52,10 @@ public class AccountController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public ResponseEntity<AccountTO> update(Account account) {
-        logger.info("update account " + account);
+    public ResponseEntity<AccountTO> update(AccountTO accountTO) {
+        logger.info("update account " + accountTO);
+
+        Account account = mapper.map(accountTO, Account.class);
 
         if (account.getBalance().compareTo(BigDecimal.ZERO) >= 0) {
             accountService.save(account);

@@ -1,9 +1,9 @@
 package com.maksimov.accountManager.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
+
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -20,16 +20,23 @@ public class Account {
     @Column(name = "balance")
     private BigDecimal balance = BigDecimal.ZERO;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "client_id", nullable = false)
+    @JsonView
+    private Client client;
+
     public Account() {
     }
 
-    public Account(String name) {
+    public Account(String name, Client client) {
         this.name = name;
+        this.client = client;
     }
 
-    public Account(String name, BigDecimal balance) {
+    public Account(String name, BigDecimal balance, Client client) {
         this.name = name;
         this.balance = balance;
+        this.client = client;
     }
 
     public String getId() {
@@ -57,6 +64,14 @@ public class Account {
             this.balance = BigDecimal.ZERO;
         }
         this.balance = balance;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 
     @Override

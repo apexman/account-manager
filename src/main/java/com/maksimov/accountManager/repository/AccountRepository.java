@@ -8,10 +8,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.LockModeType;
+import java.util.List;
 
 @Repository
 public interface AccountRepository extends CrudRepository<Account, String> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select acc from Account acc where acc.id = :id")
     Account findOneAndLock(@Param("id") String id);
+
+    List<Account> findAllByClientId(Long clientId);
 }

@@ -6,6 +6,7 @@ public class AccountTO {
     private String id;
     private String name;
     private BigDecimal balance;
+    private Long clientId;
 
     public String getId() {
         return id;
@@ -29,5 +30,23 @@ public class AccountTO {
 
     public void setBalance(BigDecimal balance) {
         this.balance = balance;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
+    }
+
+    @Override
+    public String toString() {
+        return "AccountTO{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", balance=" + balance +
+                ", clientId=" + clientId +
+                '}';
     }
 }

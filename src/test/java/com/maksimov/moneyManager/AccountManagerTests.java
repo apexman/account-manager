@@ -3,6 +3,7 @@ package com.maksimov.moneyManager;
 import com.maksimov.accountManager.AccountManager;
 import com.maksimov.accountManager.model.Account;
 import com.maksimov.accountManager.controller.AccountController;
+import com.maksimov.accountManager.model.Client;
 import io.restassured.RestAssured;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
@@ -57,13 +58,18 @@ public class AccountManagerTests {
 
     @Test
     public void addNewAccountAndRetrieveItBack() {
+        Long clientId = 1L;
+        Client client =  new Client("myx", "myx");
+        client.setId(clientId);
+
         String norbertSiegmundName = "Norbert Siegmund";
-        Account norbertSiegmundAcc = new Account(norbertSiegmundName);
+        Account norbertSiegmundAcc = new Account(norbertSiegmundName, client);
 
         Account account =
             given()
                 .queryParam("name", norbertSiegmundName)
                 .queryParam("balance", BigDecimal.ONE)
+                .queryParam("clientId", clientId)
                 .when()
                 .post("/api/account/")
                 .then()
@@ -84,6 +90,7 @@ public class AccountManagerTests {
         // Did Norbert account come back?
         assertThat(responseAccount.getName(), is(norbertSiegmundName));
         assertThat(responseAccount.getBalance(), closeTo(BigDecimal.ONE, BigDecimal.ZERO));
+        assertThat(responseAccount.getClient().getId(), is(clientId));
     }
 
     @Test
