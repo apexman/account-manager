@@ -1,9 +1,9 @@
 package com.maksimov.accountManager.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -11,6 +11,7 @@ import java.util.UUID;
 @Table(name = "account")
 public class Account {
     @Id
+    @NotNull
     @Column(name = "account_id")
     private String id = UUID.randomUUID().toString().replace("-", "");
 
@@ -80,6 +81,7 @@ public class Account {
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", balance=" + balance +
+                ", client=" + client.toString() +
                 '}';
     }
 }

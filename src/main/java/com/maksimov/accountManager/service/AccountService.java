@@ -36,7 +36,10 @@ public class AccountService {
         return accountRepository.findById(id).orElse(null);
     }
 
-    public Account save(@NotNull Account account) throws NonPositiveNumberException {
+    public Account save(Account account) throws NonPositiveNumberException {
+        if (account.getId() == null)
+            account.setId((new Account()).getId());
+
         if (account.getBalance().compareTo(BigDecimal.ZERO) >= 0)
             return accountRepository.save(account);
         else

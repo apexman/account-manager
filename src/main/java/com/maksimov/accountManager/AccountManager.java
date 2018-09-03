@@ -14,6 +14,10 @@ public class AccountManager {
 
     @Bean
     public ModelMapper modelMap() {
-        return new ModelMapper();
+        ModelMapper modelMapper = new ModelMapper();
+//        modelMapper.getConfiguration()
+//                .setMatchingStrategy(MatchingStrategies.STRICT);
+
+        return modelMapper;
     }
 }

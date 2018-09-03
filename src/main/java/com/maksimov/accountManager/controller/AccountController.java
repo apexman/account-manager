@@ -3,6 +3,7 @@ package com.maksimov.accountManager.controller;
 import com.maksimov.accountManager.dto.AccountTO;
 import com.maksimov.accountManager.model.Account;
 import com.maksimov.accountManager.service.AccountService;
+import com.maksimov.accountManager.service.ClientService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,11 +22,13 @@ public class AccountController {
     public static final String HELLO_TEXT = "hello from account controller";
 
     private AccountService accountService;
+    private ClientService clientService;
     private ModelMapper mapper;
 
     @Autowired
-    public AccountController(AccountService accountService, ModelMapper mapper) {
+    public AccountController(AccountService accountService, ClientService clientService, ModelMapper mapper) {
         this.accountService = accountService;
+        this.clientService = clientService;
         this.mapper = mapper;
     }
 
@@ -56,12 +59,14 @@ public class AccountController {
         logger.info("update account " + accountTO);
 
         Account account = mapper.map(accountTO, Account.class);
+        account.setClient(clientService.findById(accountTO.getClientId()));
 
         if (account.getBalance().compareTo(BigDecimal.ZERO) >= 0) {
             accountService.save(account);
-        }
+            return ResponseEntity.ok().body(mapper.map(account, AccountTO.class));
+        } else
+            return ResponseEntity.badRequest().body(mapper.map(account, AccountTO.class));
 
-        return ResponseEntity.ok().body(mapper.map(account, AccountTO.class));
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)

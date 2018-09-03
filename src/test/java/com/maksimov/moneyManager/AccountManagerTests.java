@@ -1,8 +1,9 @@
 package com.maksimov.moneyManager;
 
 import com.maksimov.accountManager.AccountManager;
-import com.maksimov.accountManager.model.Account;
 import com.maksimov.accountManager.controller.AccountController;
+import com.maksimov.accountManager.dto.AccountTO;
+import com.maksimov.accountManager.model.Account;
 import com.maksimov.accountManager.model.Client;
 import io.restassured.RestAssured;
 import org.apache.http.HttpStatus;
@@ -18,12 +19,15 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
@@ -51,9 +55,21 @@ public class AccountManagerTests {
         when()
             .get("/api/account/hello")
             .then()
-            .statusCode(HttpStatus.SC_OK)
+                .statusCode(SC_OK)
             .assertThat()
             .body(is(equalTo(AccountController.HELLO_TEXT)));
+    }
+
+    @Test
+    public void fetchAllAccounts() {
+        ArrayList<AccountTO> list = (ArrayList<AccountTO>) given()
+                .get("/api/account")
+                .then()
+                .statusCode(is(SC_OK))
+                .extract()
+                .body().as(ArrayList.class);
+
+        System.out.println(Arrays.toString(list.toArray()));
     }
 
     @Test
@@ -65,7 +81,7 @@ public class AccountManagerTests {
         String norbertSiegmundName = "Norbert Siegmund";
         Account norbertSiegmundAcc = new Account(norbertSiegmundName, client);
 
-        Account account =
+        AccountTO account =
             given()
                 .queryParam("name", norbertSiegmundName)
                 .queryParam("balance", BigDecimal.ONE)
@@ -73,24 +89,24 @@ public class AccountManagerTests {
                 .when()
                 .post("/api/account/")
                 .then()
-                .statusCode(is(HttpStatus.SC_OK))
+                    .statusCode(is(SC_OK))
                 .extract()
-                .body().as(Account.class);
+                    .body().as(AccountTO.class);
 
-        Account responseAccount =
+        AccountTO responseAccount =
             given()
                 .pathParam("id", account.getId())
                 .when()
                 .get("/api/account/{id}")
                 .then()
-                .statusCode(HttpStatus.SC_OK)
+                    .statusCode(SC_OK)
                 .assertThat()
-                .extract().as(Account.class);
+                    .extract().as(AccountTO.class);
 
         // Did Norbert account come back?
         assertThat(responseAccount.getName(), is(norbertSiegmundName));
         assertThat(responseAccount.getBalance(), closeTo(BigDecimal.ONE, BigDecimal.ZERO));
-        assertThat(responseAccount.getClient().getId(), is(clientId));
+        assertThat(responseAccount.getClientId(), is(clientId));
     }
 
     @Test
@@ -100,7 +116,7 @@ public class AccountManagerTests {
                 .when()
                 .delete("/api/account/{id}")
                 .then()
-                .statusCode(HttpStatus.SC_OK);
+                .statusCode(SC_OK);
     }
 
     @Test
@@ -113,20 +129,20 @@ public class AccountManagerTests {
                 .when()
                 .get("/api/account/{id}")
                 .then()
-                .statusCode(is(HttpStatus.SC_OK))
+                    .statusCode(is(SC_OK))
                 .extract()
-                .body().as(Account.class).getBalance();
+                    .body().as(AccountTO.class).getBalance();
 
-        Account account =
+        AccountTO account =
             given()
                 .pathParam("id", id)
                 .queryParam("deposit", BigDecimal.valueOf(2))
                 .when()
                 .post("/api/account/deposit/{id}")
                 .then()
-                .statusCode(is(HttpStatus.SC_OK))
+                    .statusCode(is(SC_OK))
                 .extract()
-                .body().as(Account.class);
+                    .body().as(AccountTO.class);
 
         assertThat(account.getBalance(), closeTo(currentBalance.add(BigDecimal.valueOf(2)), BigDecimal.ZERO));
     }
@@ -153,20 +169,20 @@ public class AccountManagerTests {
                 .when()
                 .get("/api/account/{id}")
                 .then()
-                .statusCode(is(HttpStatus.SC_OK))
+                    .statusCode(is(SC_OK))
                 .extract()
-                .body().as(Account.class).getBalance();
+                    .body().as(AccountTO.class).getBalance();
 
-        Account account =
+        AccountTO account =
             given()
                 .pathParam("id", id)
                 .queryParam("withdrawn", BigDecimal.valueOf(7))
                 .when()
                 .post("/api/account/withdraw/{id}")
                 .then()
-                .statusCode(is(HttpStatus.SC_OK))
+                    .statusCode(is(SC_OK))
                 .extract()
-                .body().as(Account.class);
+                    .body().as(AccountTO.class);
 
         assertThat(account.getBalance(), closeTo(currentBalance.subtract(BigDecimal.valueOf(7)), BigDecimal.ZERO));
     }
@@ -194,7 +210,7 @@ public class AccountManagerTests {
                 .when()
                 .post("/api/account/transfer")
                 .then()
-                .statusCode(is(HttpStatus.SC_OK));
+                .statusCode(is(SC_OK));
     }
 
     @Test
@@ -331,7 +347,7 @@ public class AccountManagerTests {
                         .when()
                         .post("/api/account/{id}")
                         .then()
-                        .statusCode(is(HttpStatus.SC_OK))
+                        .statusCode(is(SC_OK))
                         .extract()
                         .body().as(Account.class).getBalance();
 
@@ -342,7 +358,7 @@ public class AccountManagerTests {
                         .when()
                         .post("/api/account/deposit/{id}")
                         .then()
-                        .statusCode(is(HttpStatus.SC_OK))
+                        .statusCode(is(SC_OK))
                         .extract()
                         .body().as(Account.class);
 
@@ -364,7 +380,7 @@ public class AccountManagerTests {
                         .when()
                         .post("/api/account/{id}")
                         .then()
-                        .statusCode(is(HttpStatus.SC_OK))
+                        .statusCode(is(SC_OK))
                         .extract()
                         .body().as(Account.class).getBalance();
 
@@ -376,7 +392,7 @@ public class AccountManagerTests {
                         .when()
                         .post("/api/account/withdraw/{id}")
                         .then()
-                        .statusCode(is(HttpStatus.SC_OK))
+                        .statusCode(is(SC_OK))
                         .extract()
                         .body().as(Account.class);
 
