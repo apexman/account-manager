@@ -59,7 +59,10 @@ public class AccountController {
         logger.info("update account " + accountTO);
 
         Account account = mapper.map(accountTO, Account.class);
-        account.setClient(clientService.findById(accountTO.getClientId()));
+        Long clientId = accountTO.getClientId();
+        if (clientId != null) {
+            account.setClient(clientService.findById(clientId));
+        }
 
         if (account.getBalance().compareTo(BigDecimal.ZERO) >= 0) {
             accountService.save(account);

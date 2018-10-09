@@ -1,10 +1,11 @@
 define([
         "webix",
-        "entity/account/editForm",
-        "entity/account/depositForm",
-        "entity/account/withdrawForm"
+        "form/account/editForm",
+        "form/account/depositForm",
+        "form/account/withdrawForm",
+        "form/transaction/transferForm"
     ],
-    function (webix, accountEditForm, depositForm, withdrawForm) {
+    function (webix, accountEditForm, depositForm, withdrawForm, transferForm) {
 
         function listGrid() {
             let accountList =
@@ -34,6 +35,12 @@ define([
                         {
                             id: "",
                             template: "<input class='delbtn' type='button' value='Delete'>",
+                            css: "padding_less",
+                            width: 100
+                        },
+                        {
+                            id: "",
+                            template: "<input class='transferBtn' type='button' value='Transfer'>",
                             css: "padding_less",
                             width: 100
                         },
@@ -97,6 +104,13 @@ define([
                 $$("accountList").on_click.delbtn = function (e, id, trg) {
                     let deletingAccount = $$("accountList").getItem(id);
                     accountEditForm.deleteAccount(deletingAccount);
+
+                    //block default onclick event
+                    return false;
+                };
+                $$("accountList").on_click.transferBtn = function (e, id, trg) {
+                    let fromAcc = $$("accountList").getItem(id);
+                    transferForm.show(fromAcc, null);
 
                     //block default onclick event
                     return false;

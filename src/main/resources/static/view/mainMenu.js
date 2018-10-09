@@ -1,8 +1,8 @@
 define(
     [
         "webix",
-        "entity/account/browseAccounts",
-        "entity/account/editForm"
+        "form/account/browseAccounts",
+        "form/account/editForm"
     ],
     function (webix, accountList, accountEditForm) {
         webix.ui({
@@ -37,7 +37,7 @@ define(
                                 type: "form",
                                 height: 300,
                                 width: 300,
-                                // inputHeigth: 150,
+                                // inputHeight: 150,
                                 // inputWidth: 150,
                                 click: function () {
                                     accountList.show();

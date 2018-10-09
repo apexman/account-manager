@@ -21,8 +21,8 @@ public class Account {
     @Column(name = "balance")
     private BigDecimal balance = BigDecimal.ZERO;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "client_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "client_id", nullable = true)
     @JsonView
     private Client client;
 
