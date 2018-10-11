@@ -74,8 +74,10 @@ define(["webix"],
                                             })
                                             .fail(function (xhr) {
                                                 let response = JSON.parse(xhr.response);
-                                                webix.message({type: 'error',
-                                                    text: response.errorMessage});
+                                                webix.message({
+                                                    type: 'error',
+                                                    text: response.errorMessage
+                                                });
                                             });
                                     }
                                 }

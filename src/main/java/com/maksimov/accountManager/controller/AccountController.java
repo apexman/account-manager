@@ -38,13 +38,22 @@ public class AccountController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public ResponseEntity<List<AccountTO>> getAll() {
-        logger.info("getAll");
-        List<Account> accounts = accountService.findAll();
-        List<AccountTO> accountTOS = accounts.stream()
-                .map(account -> mapper.map(account, AccountTO.class))
-                .collect(Collectors.toList());
-        return ResponseEntity.ok().body(accountTOS);
+    public ResponseEntity<List<AccountTO>> getAccounts(@RequestParam(required = false) String name) {
+        logger.info("get accounts");
+        if (name != null) {
+            logger.info("Name part: " + name);
+            List<Account> accounts = accountService.findByNamePart(name);
+            List<AccountTO> accountTOS = accounts.stream()
+                    .map(account -> mapper.map(account, AccountTO.class))
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok().body(accountTOS);
+        } else {
+            List<Account> accounts = accountService.findAll();
+            List<AccountTO> accountTOS = accounts.stream()
+                    .map(account -> mapper.map(account, AccountTO.class))
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok().body(accountTOS);
+        }
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)

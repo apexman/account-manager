@@ -94,8 +94,8 @@ define([
                 };
 
                 $$("accountList").on_click.withdrawBtn = function (e, id, trg) {
-                    let withdrAcc = $$("accountList").getItem(id);
-                    withdrawForm.show(withdrAcc);
+                    let withdrawAcc = $$("accountList").getItem(id);
+                    withdrawForm.show(withdrawAcc);
 
                     //block default onclick event
                     return false;
@@ -110,7 +110,7 @@ define([
                 };
                 $$("accountList").on_click.transferBtn = function (e, id, trg) {
                     let fromAcc = $$("accountList").getItem(id);
-                    transferForm.show(fromAcc, null);
+                    transferForm.show(fromAcc);
 
                     //block default onclick event
                     return false;

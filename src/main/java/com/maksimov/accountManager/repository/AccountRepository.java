@@ -17,4 +17,6 @@ public interface AccountRepository extends CrudRepository<Account, String> {
     Account findOneAndLock(@Param("id") String id);
 
     List<Account> findAllByClientId(Long clientId);
+
+    List<Account> findAccountsByNameIgnoreCaseContaining(String namePart);
 }

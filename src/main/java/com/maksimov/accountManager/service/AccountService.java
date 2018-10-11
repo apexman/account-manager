@@ -36,6 +36,10 @@ public class AccountService {
         return accountRepository.findById(id).orElse(null);
     }
 
+    public List<Account> findByNamePart(@NotNull String namePart) {
+        return accountRepository.findAccountsByNameIgnoreCaseContaining(namePart);
+    }
+
     public Account save(Account account) throws NonPositiveNumberException {
         if (account.getId() == null)
             account.setId((new Account()).getId());
